@@ -20,6 +20,12 @@ docker compose up -d
 ./scripts/mongo-init.sh
 ```
 
+Очистка базы данных
+
+```shell
+./scripts/db-drop.sh
+```
+
 ## Как проверить
 
 ### Рузультат выполнения в shell

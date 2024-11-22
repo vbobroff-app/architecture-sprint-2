@@ -29,55 +29,22 @@ rs.initiate(
 );
 EOF
 
-docker compose exec -T shard2 mongosh --port 27019 --quiet <<EOF
+docker compose exec -T shard2_db1 mongosh --port 27019 --quiet <<EOF
 rs.initiate(
     {
       _id : "shard2",
       members: [
-        { _id : 1, host : "shard2:27019" }
+        {_id : 0, host : "shard2_db1:27019" },
+        {_id : 1, host: "shard2_db2:27029"},
+        {_id : 2, host: "shard2_db3:27039"}
       ]
     }
   );
 EOF
 
-
-
 docker compose exec -T mongos_router mongosh --port 27020 <<EOF
-sh.addShard( "shard1/shard1:27018");
-sh.addShard( "shard2/shard2:27019");
-
+sh.addShard( "shard1/shard1_db1:27018");
+sh.addShard( "shard2/shard2_db1:27019");
 sh.enableSharding("somedb");
 sh.shardCollection("somedb.helloDoc", { "name" : "hashed" } )
-EOF
-
-docker compose exec -T mongos_router mongosh --port 27020 --quiet <<EOF
-use somedb;
-
-for(var i = 0; i < 1000; i++) db.helloDoc.insert({age:i, name:"ly"+i})
-
-db.helloDoc.countDocuments();
-EOF
-
-docker compose exec -T shard1_db1 mongosh --port 27018 --quiet <<EOF
-use somedb;
-
-db.helloDoc.countDocuments();
-EOF
-
-docker compose exec -T shard1_db2 mongosh --port 27028 --quiet <<EOF
-use somedb;
-
-db.helloDoc.countDocuments();
-EOF
-
-docker compose exec -T shard1_db3 mongosh --port 27038 --quiet <<EOF
-use somedb;
-
-db.helloDoc.countDocuments();
-EOF
-
-docker compose exec -T shard2 mongosh --port 27019 --quiet <<EOF
-use somedb;
-
-db.helloDoc.countDocuments();
 EOF
